@@ -1,0 +1,280 @@
+\documentclass[oneside,final,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[russianb]{babel}
+\usepackage{vmargin}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[matrix,arrow,curve]{xy}
+\usepackage{graphicx}
+\setpapersize{A4}
+\setmarginsrb{2cm}{1.5cm}{1cm}{1.5cm}{0pt}{0mm}{0pt}{13mm}
+\usepackage{indentfirst}
+\sloppy
+
+\DeclareMathOperator{\sinc}{sinc}
+\newcommand\abs[1]	{|#1|}
+\newcommand\segm[2]{[#1,#2]}
+\newcommand\lm{\lambda}
+\newcommand\comm[1]{\bigl\{\text{#1}\bigr\}}
+
+\newcommand\updwninfint[1]{\int\limits_{-\infty}^{\infty} #1 \, dt}
+\newcommand\ft[1]{\updwninfint{#1 e^{-i \lm t}}}
+\newcommand\upinfint[1]{\int\limits_{0}^{\infty} #1 \, dt}
+\newcommand\dwninfint[1]{\int\limits_{-\infty}^{0} #1 \, dt}
+
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+
+\newtheorem{statement}{Утверждение}
+
+\begin{document}
+	\begin{titlepage}
+		\begin{centering}
+			\includegraphics[width=0.5\textwidth]{msu.png}\\
+			{\scshape Московский государственный университет имени М.~В.~Ломоносова}\\
+			Факультет вычислительной математики и кибернетики\\
+			Кафедра системного анализа\\
+			\vfill
+			{\LARGE Лабораторная работа №3}\\
+			\vspace{1cm}
+			{\Huge\bfseries "<Аппроксимация преобразования Фурье с помощью БПФ в среде MatLab">\\}
+		\end{centering}
+		\vspace{1cm}
+		\begin{flushright}
+			\begin{large}
+				{\itshape Студент 315 группы\\}
+				А.~А.~Владимиров\\
+				\vspace{5mm}
+				{\itshape Руководитель Практикума\\}
+				к.ф.-м.н., доцент П.~А.~Точилин\\
+			\end{large}
+		\end{flushright}
+		\vfill
+		\begin{centering}
+			Москва, 2021\\ 
+		\end{centering}
+	\newpage
+	\end{titlepage}
+
+	\setcounter{page}{2}
+	\section{Постановка задачи}
+		Требуется получить численную аппроксимацию преобразования Фурье
+		\begin{equation} \begin{aligned} \label{ft}
+			&F(\lambda) = \int\limits_{-\infty}^{\infty} f(t)e^{-i\lambda t}\, dt,\\ 
+			&f(t) = \frac{1}{2\pi} \int\limits_{-\infty}^{\infty} F(\lambda)e^{i\lambda t}\, d\lambda 
+		\end{aligned} \end{equation} 
+		для набора функций
+		\begin{equation} \begin{aligned} \label{functions}
+			&f_1(t) = te^{-2\abs{t}}\sh(t),\\ 
+			&f_2(t) = \frac{t}{2+2t+t^2},\\
+			&f_3(t) = e^{-t^6}\arctg(t^2),\\
+			&f_4(t) =	\left\{ \begin{aligned}
+							\arctg(t^3),&\quad \abs{t+2} \le 1,\\
+							0,& \text{ иначе.}
+						\end{aligned}\right.
+		\end{aligned} \end{equation} 
+		Заданы частота дискретизации \(\Delta_t\) и окно \(\segm{a}{b}\), значения функции \(f_n, \; n = \overline{1,4}\)
+		на котором мы можем использовать для нахождения приближения. \par
+		Для фунций \(f_1(t)\) и \( f_2(t)\) результат требуется сравнить с аналитическим решением,
+		предварительно посчитанным вручную.
+
+	\section{Алгоритм программной реализации численного преобразования Фурье}
+		Несмотря на тот факт, что в среде {\ttfamily MatLab} имеется специальная функция {\ttfamily fft} реализующая
+		быстрое преобразование Фурье, для получения корректного численного приближения приходится немного
+		поработать с данными как до, так и после применения {\ttfamily fft}.  Об алгоритме этой работы и пойдет речь.
+		\par
+
+	\subsection{Предварительные соображения} \label{math_section_1}
+		Пусть требуется найти дискретное преобразование Фурье функции \(f(t)\). Даны окно \(\segm{0}{T}\) 
+		\footnote{В действительности под этим окном мы подразумеваем смещенное на \(\frac{\Delta_t}{2}\), т.е
+		\(\segm{-\frac{\Delta_t}{2}}{T-\frac{\Delta_t}{2}}\).},
+		количество отсчетов \(N\), величина окна \(T\) и частота дискретизации \(\Delta_t = \frac{T}{N}\).\par
+		Фактически наша задача сводится к нахождению преобразования
+		\begin{equation} \label{cf1} %complicated formula 1
+		\tilde f (t) = (f \cdot d_{\Delta_t} \cdot h_T \ast d_{T})(t) \leftrightarrow 
+		(\frac{1}{\Delta_t} F \ast d_{\frac{2\pi}{\Delta_t}} \ast \sinc ({\scriptstyle \frac{\lambda T}{2}})
+		\cdot d_{\Delta_{\lambda}})(\lambda) = \tilde F (\lambda)
+		 \end{equation}
+		Обозначим
+		\[ \begin{aligned}
+		&\tilde F_n = \tilde F (\lambda_n), \quad \lambda_n = \frac{2\pi n}{T}, \; n = \overline{0, N-1} \\
+		&f_k = f(k\Delta_t), \quad k = \overline{0, N-1}.
+		\end{aligned} \]
+		Известно 
+		\footnote{Смысл и подробное обоснование формул \eqref{cf1}, \eqref{cf2} см. \cite{PLF}.}
+		, что
+		\begin{equation} \label{cf2} %complicated formula 2
+		\tilde F_n = \alpha_n, \quad \text{где } \alpha_n = \frac{2\pi}{T} \sum_{k=0}^{N-1} f_k e^{\frac{-2\pi ikn}{N}},
+		\quad k = \overline{0, N-1}.
+		\end{equation}
+		Отсюда получим значения приближенного преобразования Фурье \( \hat F(\lambda)\) функции \(f(t)\) в точках
+		\( \lambda_n \)
+		\begin{equation} \label{rcf} %resulting complicated formula
+		\hat F(\lm_n) = \hat F_n = \Delta_t \tilde F_n  = \frac{T}{N} \alpha_n =\frac{2\pi}{N}
+		\sum_{k=0}^{N-1} f_k e^{\frac{-2\pi ikn}{N}} = \bigl\{  \text{обозначим сумму как \( \tilde\alpha_n \)} \bigr\} =
+		\frac{2\pi}{N} \tilde\alpha_n.
+		\end{equation}
+
+	\subsection{Программная реализация в случае окна вида \(\segm{0}{T}\)} \label{prog_section_1}
+		Как уже упоминалось, в среде {\ttfamily MatLab} реализована функция {\ttfamily fft}, с функциональной точки
+		зрения в точности совпадающая с формулой
+		\[ \tilde \alpha_n = \sum_{k=0}^{N-1} f_k e^{\frac{-2\pi ikn}{N}}. \]
+		Но тогда, раз верно \eqref{rcf}, то задав сетку \verb !t_k = 0:dt:T;!
+		(предварительно инициализировав переменную {\ttfamily dt} значением \( \Delta_t \) ) и сеточную функцию
+		 \verb !f0_k = f(t_k);!,
+		мы можем найти коэффициенты \( \tilde\alpha_n \)
+		\begin{verbatim}  a_n = fft(f_k); \end{verbatim}
+		и сразу же вычислить требуемую аппроксимацию \( \hat F(\lm) \)
+		\begin{verbatim}  F0_n = 2*pi/N * a_n; \end{verbatim}
+ 		в точках \( \lm_n = \frac{2\pi n}{T} \) \quad (\verb ! l_n = 0:(2*pi/T):(2*pi*(N-1)/T); !).
+		
+		Мотивация именования переменных \verb ! f0_k ! и \verb ! F0_k ! будет понятная далее.
+
+	\subsection{Еще немного математики}
+		Пусть теперь требуется выбрать отсчеты функции \(f(t)\) из окна \(\segm{a}{b}\). Определим функцию
+		\(\mathring f(t)  = f(t-a)\) отсчеты которой из окна \(\segm{0}{b-a}\) соответствуют требуемым отсчетам
+		функции \(f(t)\). Вспомним одно из свойств преобразования Фурье, а именно
+		\[ f(t-a) \leftrightarrow e^{-i\lm a} F(\lm). \]
+		Но тогда
+		\[ \xymatrix{
+		f(t-a)  \ar@{=}[d] \ar@{<->}[r] & e^{-i\lm a} F(\lm) \ar@{=}[d] \\
+		\mathring f(t) \ar@{<->}[r] & \mathring F(\lm). \\
+		} \]
+		А значит
+		\begin{equation} \label{FTshift} 
+			F(\lm) = e^{i\lm a} \mathring F(\lm). 
+		\end{equation}
+		Из пункта \ref{math_section_1} нам известна аппроксимация функции \(\mathring F(\lm) \) в точках \( \lm_n \)
+		\[ \mathring F(\lm_n)  \approx \hat F(\lm_n) = \hat F_n \quad\lambda_n = \frac{2\pi n}{T}, \; n = \overline{0, N-1} \]
+		Из чего, с учетом \eqref{FTshift}, делаем вывод
+		\begin{equation} \label{approx}
+			F(\lm_n) \approx e^{i\lm_n a} \hat F_n \quad\lambda_n = \frac{2\pi n}{T}, \; n = \overline{0, N-1} 
+		\end{equation}
+	\subsection{Программная реализация в случае окна вида \(\segm{a}{b}\)}
+		В силу утверждения \eqref{approx} случай с общим видом окна \segm{a}{b} легко сводится к уже рассмотренному
+		\ref{prog_section_1}. С небольшими добавлениями относительно пункта \ref{prog_section_1}
+		приводим листинг итоговой программы
+		\footnote{Считаем что переменные dt, N, a, b, T предварительно проинициализированны корректными значениями
+		\( \Delta_t, N, a, b, T \) соответственно.
+		}. \par
+		\begin{verbatim}
+			a0 = 0; b0 = b-a;             %для удобства явно зададим границы сдвинутого окна
+			tn = a0:dt:(b0-dt/2);         %сетка \t_n
+			dl = 2*pi/T;                  %шаг \Delta_lambda
+			ln = 0:dl:2*pi*(N-1)/T;       %сетка \lambda_n
+			f0 = @(t) fHandle(t-a);       %функция f_0 = f(t-a)
+			f0n = f0(tn);                 %сеточная функция f_0n
+			F0n = 2*pi/N * fft(f0n);      %образ Фурье сеточной функции f_0n
+			Fn = exp(1i*ln*a).*F0n;       %образ Фурье сеточной функции f_0 (явно не заданной!)
+		\end{verbatim}
+		
+	\section{Аналитический вывод преобразования Фурье некоторых функций}
+		Для дальнейшей иллюстрации результатов работы программы будет полезно вручную вычислить преобразование
+		Фурье некоторых функций. Благодаря этому, позже мы сможем наглядно сравнить численный результат с
+		аналитическим. \par
+		{\large {\sffamily Пример 1.} Функция \( f(t)= te^{-2\abs{t}}\sh(t). \) \\}
+			Преобразование Фурье функции \(f(t)\) по определению имеет вид
+			\[ F(\lm) = \ft{te^{-2\abs{t}}\sh(t)}. \]
+			Воспользуемся свойством преобразования Фурье
+			\[ (-it) f(t) \leftrightarrow F'(\lm): \]
+			\[ F(\lm) = \ft{ (-it) i e^{-2\abs{t}}\sh(t) }, \text{ обозначим } g(t) = i e^{-2\abs{t}}\sh(t), \text{ тогда}\]
+			\begin{equation} \label{F_eq_dG} 
+			F(\lm) = \ft{(-it)g(t)} = G'(\lm), \text{ где } G(\lm) = \ft{g(t)}. \end{equation}
+			Перейдем вычислению \(G(\lm)\)
+			\begin{multline*} 
+			G(\lm) = \ft{g(t)} = \comm{т.к \(g(t)\) ~--- нечетная} = i\updwninfint{g(t)\sin(\lm t)} = \\
+			= \comm{раскроем модуль в экспоненте}  = i\dwninfint{i e^{2t} \sh(t) \sin(\lm t)} + 
+			i\upinfint{i e^{-2t} \sh(t) \sin(\lm t)} = \\ =   -\dwninfint{e^{2t} \sh(t) \sin(\lm t)}
+			-\upinfint{e^{-2t} \sh(t) \sin(\lm t)} = -I_1 - I_2.
+			\end{multline*} 
+			\[ I_1 = \comm{произведем замену \(x = -t\)} = \int_{\infty}^{0} e^{-2x}\sh(-x)\sin(-\lm x) \, (-dx) = 
+			\int_{0}^{\infty} e^{-2x}\sh(x)\sin(\lm x) \, dx = I_2. \]
+			Таким образом
+			\[ G(\lm) = -I_1 - I_2 = - 2 I_2 = -2\upinfint{e^{-2t} \sh(t) \sin(\lm t)}, \]
+			далее
+			\begin{multline*}
+			 G(\lm) = -2\upinfint{e^{-2t} \sh(t) \sin(\lm t)} = -2\upinfint{e^{-2t} \frac{e^t - e^{-t}}{2}
+			\frac{e^{i\lm t} - e^{-i\lm t}}{2i}} =\\= \frac{i}{2}\upinfint{(e^{-t}- e^{-3t}) (e^{i\lm t} - e^{-i\lm t})} =
+			\frac{i}{2}\upinfint{e^{(-1+i\lm)t} - e^{(-1-i\lm)t} - e^{(-3+i\lm)t} + e^{(-3-i\lm)t}} = \\ = 
+			\frac{i}{2} \Bigl(\frac{1}{-1+i\lm} e^{(-1+i\lm)t} - \frac{1}{-1-i\lm}e^{(-1-i\lm)t} - 
+			\frac{1}{-3+i\lm} e^{(-3+i\lm)t} + \frac{1}{-3-i\lm} e^{(-3-i\lm)t}\Bigr)\biggm|_{0}^{\infty} = \\
+			=\frac{i}{2} \Bigl(\frac{1}{1-i\lm} - \frac{1}{1+i\lm} - \frac{1}{3-i\lm}  + \frac{1}{3+i\lm}\Bigr) = 
+			\frac{i}{2} \Bigl( \frac{2i\lm}{1+\lm^2} - \frac{2i\lm}{9 +\lm^2}\Bigr) = \\
+			= \Bigl( - \frac{1}{1+\lm^2} + \frac{1}{9 +\lm^2}\Bigr) = \frac{-8}{(1+\lm^2)(9+\lm^2)}.
+			\end{multline*}
+			Получив \(G(\lm)\), мы можем вернуться к вычислению \(F(\lm)\), которое, в силу \eqref{F_eq_dG}
+			сводится к нахождению производной
+			\[ \Bigl(\frac{-8}{(1+\lm^2)(9+\lm^2)}\Bigr)' = \Bigl(\frac{-8}{(9+10\lm^2 + \lm^4)}\Bigr)' = 
+			\frac{8(20\lm+4\lm^3)}{(9+10\lm^2+\lm^4)^2} = \frac{32\lm(5+\lm^2)}{(1+\lm^2)^2(9+\lm^2)^2} \]
+			Отдельно выпишем полученный результат
+			\begin{equation} \label{F_1}
+			F(\lm) =  \frac{32\lm(5+\lm^2)}{(1+\lm^2)^2(9+\lm^2)^2}. \end{equation}
+			
+		{\large {\sffamily Пример 2.} Функция \( f(t) = \frac{t}{2+2t+t^2}. \) \\ }
+			Преобразование Фурье данной функции по определению имеет вид
+			\begin{equation} \label{ex2} F(\lm) = \ft{\frac{t}{2+2t+t^2}}. \end{equation}
+			Предварительно напомним важное следствие леммы Жордана \footnote{Также см. \cite{PLF}}.
+			\begin{statement} \label{st1}
+				Пусть \(f(z)\) аналитична при \(\abs{z} > R\) при достаточно большом \(R\), не имеет особых точек
+			на \({\mathbb R }\) и \(f(z) \xrightarrow[\substack{\abs{z} \rightarrow 0 \\ im\,z \ge 0}]{} 0\),
+			тогда при \(\lm > 0 \)
+			\[ \int\limits_{-\infty}^{\infty} e^{i\lm x} f(x) \, dx = 
+			2\pi i \sum\limits_{z_i\,:\,im\,z >0}^{} res(e^{i\lm z}f(z),z_i).\]
+			\end{statement}
+			Отметим, что при \(\lm \ne 0 \) мы находимся (с некоторыми поправками) в условиях утв.\ref{st1}.\par
+			Перед вычислением интеграла \eqref{ex2} найдем особые точки подинтегральной функциии и
+			соответствующие им вычеты.
+			\[g(t) = \frac{t e^{-i\lm x}}{2+2t+t^2} = \frac{t e^{-i\lm x}}{(t+1)^2+1} = 
+			\frac{t e^{-i\lm x}}{(t+1 - i)(t+1+i)}.\]
+			Так, имеем два полюса \(z_1, z_2\) первого порядка с ненулевой мнимой частью
+			\[ \begin{aligned}
+				&z_1 = -1+i, \text{ находится в верхней полуплоскости,}\\
+				&z_2 = -1-i, \text{ находится в нижней полуплоскости.}
+			\end{aligned} \]
+			Вычеты для них
+			\[ \begin{aligned}
+				&res(g(z),z_1) = \lim\limits_{z\to z_1} g(z)(z-z_1) = \frac{z_1 e^{-i\lm z_1}}{z_1 - z_2} = 
+			\frac{(-1+i) e^{-i\lm (-1+i)}}{(-1+i) - (-1-i)} =  \frac{-1+i}{2i} e^{\lm (1+i)},\\
+				&res(g(z),z_2) = \lim\limits_{z\to z_2} g(z)(z-z_2) = \frac{z_2 e^{-i\lm z_2}}{z_2 - z_1} =
+			\frac{(-1-i) e^{-i\lm (-1-i)}}{(-1-i) - (-1+i)}	= \frac{1+i}{2i} e^{\lm (-1+i)}.
+			\end{aligned} \]
+			\par
+			Теперь мы без труда можем найти интеграл \eqref{ex2}. Рассмотрим три случая
+			\begin{description}
+			\item[\(\lm > 0 :\)]
+				\begin{multline*} F(\lm) = \ft{\frac{t}{2+2t+t^2}} = \comm{используем лемму Жордана для нижней
+				полуплоскости} =\\
+				= -2\pi i\; res(g(z),z_2) = -2\pi i \frac{1+i}{2i} e^{\lm (-1+i)} = \pi (-1-i) e^{\lm (-1+i)}.
+				\end{multline*}
+			\item[\(\lm < 0 :\)]
+				\begin{multline*} F(\lm) = \ft{\frac{t}{2+2t+t^2}} = \comm{исп. л. Ж. для верхней полуплоскости} = \\
+				= 2\pi i\; res(g(z),z_1) = 2\pi i \frac{-1+i}{2i} e^{\lm (1+i)} = \pi (-1+i) e^{\lm(1+i)}.
+				\end{multline*}
+			\item[\(\lm = 0 :\)]
+				\begin{multline*}
+				F(\lm) = \updwninfint{\frac{t}{2+2t+t^2}} =
+				\int\limits_{-\infty}^{\infty} \frac{(t+1-1)\,dt}{(t+1)^2 + 1} =
+				\frac{1}{2} \int\limits_{-\infty}^{\infty} \frac{2(t+1)\,dt}{(t+1)^2 + 1} -
+				\int\limits_{-\infty}^{\infty} \frac{dt}{(t+1)^2+1} = \\
+				= \frac{1}{2} \int\limits_{-\infty}^{\infty} \frac{dx}{x+1} - \int\limits_{-\infty}^{\infty} \frac{dy}{y^2+1}
+				\stackrel{\text{(v.p)}}{=} \ln \abs{x+1}\biggm|_{-\infty}^{+\infty} -
+				\arctg(y)\biggm|_{-\infty}^{+\infty} \stackrel{\text{(v.p)}}{=} 0 - \Bigl(\frac{\pi}{2} - (-\frac{\pi}{2})\Bigr)
+				= -\pi.
+				\end{multline*}
+			\end{description}
+			Итого
+			\begin{equation} \label{F_2}
+			F(\lm) = \left\{\begin{aligned}
+				\pi (-1+i) e^{\lm(1+i)},&\quad \lm < 0, \\
+				-\pi,&\quad \lm = 0, \\
+				\pi (-1-i) e^{\lm (-1+i)},&\quad \lm >0. \end{aligned}\right.
+			\end{equation}
+
+	\section{Иллюстрации}
+		Перейдем к результатам работы программы
+	
+	\begin{thebibliography}{0}
+		\bibitem{PLF} Точилин~П.~А. кафедральный курс \emph{"<Преобразование Лапласа-Фурье">}, 2020.
+	\end{thebibliography}
+\end{document}

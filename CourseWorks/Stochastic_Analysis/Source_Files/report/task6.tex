@@ -1,0 +1,101 @@
+\section{Задание 6}
+
+\begin{enumerate}
+	\item Посчитать интеграл
+	\begin{equation}\label{integral}
+	\int\limits_{-\infty}^{\infty} \int\limits_{-\infty}^\infty \cdots \int\limits_{-\infty}^\infty \frac{e^{-\left(x_1^2 + \ldots + x_{10}^2 + \frac{1}{ 2^7\cdot x_1^2 \cdot \ldots \cdot x_{10}^2}\right)}}{x_1^2 \cdot \ldots \cdot x_{10}^2}\,dx_1 dx_2 \ldots dx_{10}
+	\end{equation}
+	\begin{itemize}
+		\item[---] методом Монте-Карло
+		\item[---] методом квадратур, сводя задачу к вычислению собственного интеграла Римана
+	\end{itemize}
+	\item Для каждого случая оценить точность вычислений.
+\end{enumerate}
+
+\subsection{Численное интегрирование}
+	Перепишем \eqref{integral} следующим образом
+	\begin{multline*}
+	\idotsint_{\mathbb{R}^{10}} \frac{e^{-\left(x_1^2 + \ldots + x_{10}^2 + 
+	\frac{1}{ 2^7\cdot x_1^2 \cdot \ldots \cdot x_{10}^2}\right)}}
+	{x_1^2 \cdot \ldots \cdot x_{10}^2}\,dx_1 dx_2 \ldots dx_{10} = \\
+	\idotsint_{\mathbb{R}^{10}} 
+	\frac{\pi^5 e^{-\frac{1}{ 2^7\cdot x_1^2 \cdot \ldots \cdot x_{10}^2}}}
+	{x_1^2 \cdot \ldots \cdot x_{10}^2} \cdot 
+	\frac{e^{-(x_1^2 + \ldots + x_{10}^2)}}{\pi^5}\,dx_1 dx_2\ldots dx_{10} = 
+	\idotsint_{\mathbb{R}^{10}} f(x) \cdot p(x)\,dx,
+	\end{multline*}
+	где $p(x)$~--- плотность многомерного нормального распределения 
+	$\mathcal{N}(0,\frac{1}{2} E)$,\\ $E\in \mathbb{R}^{10\times10}$. Таким образом
+	\begin{equation*}
+		\idotsint_{\mathbb{R}^{10}} f(x) \cdot p(x)\,dx = \Exp{f(\eta)}, \quad
+		\eta \sim \mathcal{N}(0,\frac{1}{2} E).
+	\end{equation*}
+
+	По усиленному закону больших чисел имеем
+	\begin{equation*}
+		\widehat I_n = \frac{1}{n}\sum\limits_{i=1}^{n} f(\eta_i) 
+		\xrightarrow[]{\text{п.н.}} \Exp f(\eta) =
+		\idotsint_{\mathbb{R}^{10}} f(x) \cdot p(x)\,dx = I,
+	\end{equation*}
+	что дает нам основания использовать метод Монте-Карло для вычисления 
+	интеграла \eqref{integral}.
+
+	Другим способом вычисления может служить метод квадратур, для реализации 
+	которого проведем замену
+	\begin{equation*}
+		x_i = \tg (\tfrac{\pi}{2}t_i),\: t_i \in [0,1],\quad i = \overline{1,10}.
+	\end{equation*}
+	Тогда \eqref{integral} примет вид 
+	\begin{equation}\label{Rint}
+		I = \pi^{10} \idotsint_{[0,1]^{10}} \frac
+		{e^{-\biggl(\textstyle{ \sum\limits_{i=1}^{10} \tg (\frac{\pi}{2}t_i)^2 + 
+		\frac{1}{2^7 \prod_{i=1}^{10}\tg(\frac{\pi}{2}t_i)^2} }\biggr)}}
+		{\prod_{i=1}^{10}\tg(\frac{\pi}{2}t_i)^2 \cdot 
+		\prod_{i=1}^{10}\cos(\frac{\pi}{2}t_i)^2} \, dt.
+	\end{equation}
+	Интeграл \eqref{Rint} уже можно вычислить, например, стандартным методом 
+	прямоугольников на равномерной сетке.
+
+\subsection{Точность вычислений}
+	В соответствии с ЦПТ и правилом трех сигм, при достаточно больших $n$ 
+	погрешность метода Монте-Карло с вероятностью около $0.997$ составляет
+	\begin{equation*}
+		\psi_n = 3\frac{\sqrt{\Disp{f(\eta)}}} {\sqrt{n}} \ge |\hat I_n - I|.
+	\end{equation*}
+	Для вычисления погрешности будем приближать значение $\Disp{f(\eta)}$ 
+	выборочной дисперсией 
+	\begin{equation*}
+		S_n^2 = \frac{1}{n} \sum_{i = 1}^n f^2(x_i) - \left( \frac{1}{n}
+ \sum_{i = 1}^n f(x_i) \right)^2.
+	\end{equation*}
+	Результаты работы программы представлены на таблице \ref{tabMC}.
+	
+	\begin{table}[ht]
+	\begin{tabular}{|cccc}
+		Объем выборки & Результат & Величина ошибки & Время работы (сек.) \\[5pt]
+		$n=10^3$      & 120.0206  & 13.7449         & 0.021               \\
+		$n=10^4$      & 122.5785  & 3.3040          & 0.416                \\
+		$n=10^5$      & 124.7199  & 1.0937          & 3.67                 \\
+	\end{tabular}
+	\caption{}
+	\label{tabMC}
+	\end{table}
+	
+	Как известно погрешность метода прямоугольников составляет 
+	\begin{equation*}
+		\psi_n = \frac{h^2}{24} (b-a) \sum\limits_{i,j = 1}^{10} 
+		\max |f''_{x_i x_j} | = 
+		\frac{1}{6n^2} \sum\limits_{i,j = 1}^{10} \max |f''_{x_i x_j} |.
+	\end{equation*}
+	Результаты работы программы см. на таблице \ref{tabRS}.
+
+	\begin{table}[ht]
+	\begin{tabular}{|ccc}
+		Мощность сетки & Результат  & Время работы (сек.) \\[5pt]
+		$n=10^3$       & 1572.5830  & 0.03                \\
+		$n=10^4$       & 1247.9712  & 0.474               \\
+		$n=10^5$       & 794.7241   & 5.19                \\
+	\end{tabular}
+	\caption{}
+	\label{tabRS}
+	\end{table}
