@@ -1,0 +1,79 @@
+\documentclass[11pt]{article}
+
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+
+\usepackage{indentfirst}
+\usepackage{geometry}
+
+\usepackage{amsmath, amssymb, amsfonts, amsthm, amscd}
+\usepackage{mathrsfs}
+
+\usepackage{caption}
+\usepackage{graphicx}
+\usepackage[all]{xy}
+
+\geometry{a4paper}
+\sloppy
+
+
+\theoremstyle{plain}
+\newtheorem{lemma}{Лемма}
+\newtheorem{statement}{Утверждение}
+\newtheorem{theorem}{Теорема}
+\theoremstyle{definition}
+\newtheorem{definition}{Определение}
+\newtheorem{corollary}{Следствие}
+\theoremstyle{remark}
+\newtheorem*{remark}{Замечание}
+
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\phi}{\varphi}
+\renewcommand{\epsilon}{\varepsilon}
+\renewcommand{\kappa}{\varkappa}
+
+\newcommand{\comdots}{,\!..}
+\newcommand{\sub}[1]{\lfloor #1 \rfloor}
+
+\DeclareMathOperator*{\Hom}{Hom}
+\DeclareMathOperator*{\Tor}{Tor}
+\DeclareMathOperator*{\Obj}{Obj}
+\DeclareMathOperator*{\Arr}{Arr}
+\DeclareMathOperator*{\fund}{fund}
+\DeclareMathOperator*{\codom}{codom}
+\DeclareMathOperator*{\id}{id}
+\DeclareMathOperator*{\subdim}{\lfloor \dim \rfloor}
+
+\renewcommand{\thesubsubsection}{\roman{subsubsection}.}
+
+\title{Характер группоида}
+\author{А.~A.~Владимиров}
+\date{19.07.2022}
+
+\begin{document}
+
+\begin{titlepage}
+    \maketitle
+
+\section*{Задача}
+\input{intro.tex}
+\tableofcontents
+\end{titlepage}
+
+\section*{Решение}
+            \subsection{Структура группоида}
+            \input{groupoid_struct.tex}
+
+\newpage    \subsection{Пространство характеров}
+            \input{char_texs/groupoid.tex}
+            \input{char_texs/group.tex}
+            \input{char_texs/abelian_group.tex}
+            \input{char_texs/result.tex}
+
+\newpage    \subsection{Преобразование характеров}
+            \input{outro.tex}
+            \input{bibliography.tex}
+            
+\end{document}

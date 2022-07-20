@@ -1,0 +1,21 @@
+\subsubsection{Итог}
+Доказанные утверждения \ref{st_groupoid_decomp}--\ref{st_ab_char} 
+позволяют серьезно упростить рассмотрение пространства характеров группоида.
+Утверждение \ref{st_char_grpd_decomp} сводит $X(\Gamma)$ к прямой сумме 
+пространств характеров фактор-группоида и фундаментальной группы 
+\[X(\Gamma) \simeq X(\Gamma/\Phi_\Gamma)\oplus X(\Phi_\Gamma).\] 
+Первое из которых (утверждение \ref{st_smp_grp_char}) суть есть векторное 
+пространство известной размерности
+\[X(\Gamma/\Phi_\Gamma) \simeq \mathbb{C}^{n-1}.\]
+Второе сводится к пространству на абелизации, оно, в свою очередь, к 
+пространству на свободной подгруппе, которое также суть есть векторное 
+пространство известной размерности (утверждения \ref{st_char_gr_to_ab}, 
+\ref{st_ab_char})
+    \[X(\Phi_\Gamma) \simeq X(\Phi_\Gamma/\Phi_\Gamma') 
+    \simeq X(\sub{\Phi_\Gamma / \Phi_\Gamma'}) \simeq \mathbb{C}^m.\]
+Тем самым справедлива
+\begin{theorem} (о характере группоида)
+    \[X(\Gamma) \simeq X(\Gamma/\Phi_\Gamma) 
+    \oplus X(\sub{\Phi_\Gamma / \Phi_\Gamma'}) \simeq \mathbb{C}^{(n-1)+m},\]
+    где $n = | \Obj \Gamma |$, $m = \dim \sub{\Phi_\Gamma / \Phi_\Gamma'}$.
+\end{theorem}

@@ -1,0 +1,20 @@
+
+    Дан функтор $\kappa : \mathbf{Cat}(\Gamma) \to \mathbf{Vec}$, каждому 
+    группоиду ставящий в соответсвтие линейное пространство его характеров~--- 
+    \[X(\Gamma) = \{\chi: \Arr \Gamma \to \mathbb{C}: \chi(\psi \circ \phi) = 
+    \chi(\psi) + \chi(\phi)\}.\]
+
+    Задача состоит в отыскании действия $\kappa$ на $\Arr \mathbf{Cat}(\Gamma)$, 
+    иными словами в нахождении линейного оператора $\chi(\phi) : X(\Gamma_1) 
+    \to X(\Gamma_2)$ на коммутативной диаграмме~\ref{cd_problem}.
+
+    \begin{figure}[h]
+        \centering
+        \[\xymatrix{
+            \Gamma_1 \ar[dd]^{\textstyle{\phi}} \ar@{|..>}[rr]^{\textstyle{\kappa}}    & & X(\Gamma_1) \ar[dd]^{\textstyle{\chi(\phi)}} \\
+                                                                                & & \\
+            \Gamma_2 \ar@{|..>}[rr]^{\textstyle{\kappa}}                               & & X(\Gamma_2)
+        }\]
+        \caption{постановка задачи}
+        \label{cd_problem}
+    \end{figure}

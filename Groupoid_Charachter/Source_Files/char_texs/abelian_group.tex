@@ -1,0 +1,25 @@
+\subsubsection{Абелева группа}
+    Итак, пусть некоторая группа $A$ --- абелева. Известно, что для 
+    \emph{конечно-порожденных} абелевых групп справедливо разложение 
+    (\cite{Vinberg} гл.9 \S 1)
+    \begin{equation}\label{A_decomp}
+        A = \sub{A} \oplus \Tor A,
+    \end{equation}
+    где $\sub{A} \simeq \mathbb{Z}^{n}$ --- \emph{свободная подгруппа}, 
+    $\Tor A$ --- \emph{подгруппа кручения}, т.е.
+    \begin{equation}\label{tor_def}
+        \Tor A \doteqdot \{a \in A: ma = 0\text{ для некоторого }m \in 
+        \mathbb{Z}, m \ne 0\}.
+    \end{equation}
+    
+    Из разложения \eqref{A_decomp} и леммы \ref{lm_char_decomp} следует, что
+    \begin{equation}
+        X(A) \simeq X(\sub{A}) \oplus X(\Tor A).
+    \end{equation}
+    Но из определения группы кручения \eqref{tor_def} и свойств характера 
+    вытекает, что $X(\Tor A)$ тривиально. Таким образом, получим
+    
+    \begin{statement} \label{st_ab_char} Для конечно-порожденной абелевой группы
+        \[X(A) \simeq X(\sub{A}) \simeq \mathbb{C}^{m},\]
+    где $m = \dim \sub{A}$.
+    \end{statement}
