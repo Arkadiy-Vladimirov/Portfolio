@@ -1,0 +1,1 @@
+This folder contains source files of SQL server project (easily compilable! see following ReadMe).

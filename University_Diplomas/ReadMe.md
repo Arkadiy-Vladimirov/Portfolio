@@ -1,0 +1,1 @@
+Recent students' olympiad diploma.

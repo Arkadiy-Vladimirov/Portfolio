@@ -1,0 +1,1 @@
+Diplomas of my school-time olympiads.

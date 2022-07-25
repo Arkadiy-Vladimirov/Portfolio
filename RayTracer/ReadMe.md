@@ -1,0 +1,1 @@
+This folder contains source files of my TinyRayTracing engine project with commentaries and couple of rendered images.
