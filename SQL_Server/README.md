@@ -2,6 +2,11 @@
 Model SQL Interpreter Readme|
 ============================|
 
+Quick Run
+=========
+$ make -f Makefile-test
+$ make -f Makefile-test clean
+$ bash tester.sh ./ModelSQLserver ./tests/tests_ok
 
 How to make it work:
 ====================

@@ -25,6 +25,4 @@ tableint.o: tableint.cpp
 	g++ -Wall -std=c++11 -c -g tableint.cpp
 
 clean:
-	rm -f *.o *.a  ModelSQLserver
-
-
+	rm -f *.o *.a
